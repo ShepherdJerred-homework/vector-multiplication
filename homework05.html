@@ -144,9 +144,9 @@
 </pre>
     <p>
       Your main process should read in the input,
-      broadcast <var>M</var>, <var>N</var>, and the vector, then scatter the
+      broadcastParams <var>M</var>, <var>N</var>, and the vector, then scatter the
       columns matrix.  (Broadcast both <var>M</var> and <var>N</var> in a
-      single packed broadcast.)  Each process should calculate the dot product
+      single packed broadcastParams.)  Each process should calculate the dot product
       of each of its columns with the vector.  Then gather the results back
       into a vector in the main process.  The main process should print the
       resulting matrix out—all on one line separated by spaces (like a
