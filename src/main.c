@@ -12,10 +12,8 @@ struct Params {
 // https://stackoverflow.com/questions/10788180/sending-columns-of-a-matrix-using-mpi-scatter
 // https://www.mpich.org/static/docs/v3.2/www3/MPI_Type_vector.html
 void createVectorType(int m, int n, MPI_Datatype *newType) {
-    MPI_Datatype vectorColumnType;
-    MPI_Type_vector(m, 1, n, MPI_DOUBLE, &vectorColumnType);
-    MPI_Type_commit(&vectorColumnType);
-    MPI_Type_create_resized(vectorColumnType, 0, sizeof(double), newType);
+    MPI_Type_vector(m, 1, n, MPI_DOUBLE, newType);
+    MPI_Type_create_resized(*newType, 0, sizeof(double), newType);
     MPI_Type_commit(newType);
 }
 
@@ -70,11 +68,13 @@ void calculateNumberOfNumbersPerProcess(int m, int numberOfColumnsPerProcess, in
     *numberOfNumbersPerProcess = m * numberOfColumnsPerProcess;
 }
 
-void broadcastParams(MPI_Datatype type, int *m, int *n) {
+void broadcastParams(int *m, int *n) {
+    MPI_Datatype paramsType;
+    createParamsType(&paramsType);
     struct Params params;
     params.m = *m;
     params.n = *n;
-    MPI_Bcast(&params, 1, type, MAIN_PID, MPI_COMM_WORLD);
+    MPI_Bcast(&params, 1, paramsType, MAIN_PID, MPI_COMM_WORLD);
     *m = params.m;
     *n = params.n;
 }
@@ -87,17 +87,13 @@ void broadcastVector(int pid, int m, double **vector) {
 }
 
 void
-broadcastMatrix(MPI_Datatype vectorType, int numberOfNumbersPerProcess, int numberOfColumnsPerProcess, double *matrix,
+broadcastMatrix(int m, int n, int numberOfNumbersPerProcess, int numberOfColumnsPerProcess, double *matrix,
                 double **myMatrix) {
-//    printf("nnpp: %i, ncpp: %i\n", numberOfNumbersPerProcess, numberOfColumnsPerProcess);
+    MPI_Datatype vectorType;
+    createVectorType(m, n, &vectorType);
     *myMatrix = calloc((size_t) numberOfNumbersPerProcess, sizeof(double));
     MPI_Scatter(matrix, numberOfColumnsPerProcess, vectorType, *myMatrix, numberOfNumbersPerProcess, MPI_DOUBLE,
                 MAIN_PID, MPI_COMM_WORLD);
-
-    int i;
-    for (i = 0; i < numberOfNumbersPerProcess; i++) {
-        printf("myMatrix[%i]: %lf\n", i, *(*myMatrix + i));
-    }
 }
 
 int main(int argc, char **argv) {
@@ -119,41 +115,17 @@ int main(int argc, char **argv) {
     int numberOfColumnsPerProcess;
     int numberOfNumbersPerProcess;
 
-    MPI_Datatype paramsType;
-    MPI_Datatype vectorType;
-
-    createVectorType(m, n, &vectorType);
-    createParamsType(&paramsType);
-
     if (pid == MAIN_PID) {
         getInput(&m, &n, &vector, &matrix);
-
-//        int i;
-//        for (i = 0; i < m * n; i++) {
-//            printf("matrix[%i]: %lf\n", i, matrix[i]);
-//        }
     }
 
-    broadcastParams(paramsType, &m, &n);
-
-//    printf("pid: %i, n: %i, m: %i\n", pid, n, m);
+    broadcastParams(&m, &n);
 
     calculateColumnsPerProcess(numberOfProcesses, n, &numberOfColumnsPerProcess);
     calculateNumberOfNumbersPerProcess(m, numberOfColumnsPerProcess, &numberOfNumbersPerProcess);
 
-    printf("pid: %i, nonpp: %i, cpp: %i\n", pid, numberOfNumbersPerProcess, numberOfColumnsPerProcess);
-
     broadcastVector(pid, m, &vector);
-    broadcastMatrix(vectorType, numberOfNumbersPerProcess, numberOfColumnsPerProcess, matrix, &myMatrix);
-
-//    for (i = 0; i < m; i++) {
-//        printf("vector[%i]: %lf\n", i, vector[i]);
-//    }
-
-    int i;
-    for (i = 0; i < numberOfNumbersPerProcess; i++) {
-        printf("myMatrix[%i]: %lf\n", i, myMatrix[i]);
-    }
+    broadcastMatrix(m, n, numberOfNumbersPerProcess, numberOfColumnsPerProcess, matrix, &myMatrix);
 
     MPI_Finalize();
 }
