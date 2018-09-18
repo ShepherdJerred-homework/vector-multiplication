@@ -1,0 +1,1 @@
+mpicc -g -Wl,-search_paths_first -Wl,-headerpad_max_install_names  CMakeFiles/vector-multiplication.dir/src/main.c.o  -o vector-multiplication 

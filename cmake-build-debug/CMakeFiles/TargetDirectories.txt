@@ -1,0 +1,3 @@
+/Users/jerred/CLionProjects/vector-multiplication/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Users/jerred/CLionProjects/vector-multiplication/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/jerred/CLionProjects/vector-multiplication/cmake-build-debug/CMakeFiles/vector-multiplication.dir

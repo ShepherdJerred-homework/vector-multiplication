@@ -1,0 +1,171 @@
+
+<!-- saved from url=(0061)https://cs.harding.edu/gfoust/classes/comp425/homework05.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <title>Comp 425 Homework</title>
+    <link rel="stylesheet" href="./homework05_files/standard.css" type="text/css">
+    <!--<base target="_top">--><base href="." target="_top">
+    <style>
+      ol > li { margin-bottom: 4em; }
+      ol ol > li, ol ul > li { margin: 0.5em 0; }
+      ol { list-style-type: decimal; }
+      ol ol { list-style-type: lower-alpha; }
+      .mult { display: flex; align-items: center; }
+      .mult table {
+          border-width: 1px;
+          border-color: black;
+          border-style: none solid;
+          margin-left: 1em;
+          margin-right: 1em;
+      }
+      .mult table td {
+          text-align: right;
+          padding: 0 1ex;
+      }
+      .mult table.sum td.plus {
+          text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      You are to write an MPI program which is able to multiply a row vector
+      and a matrix.  The vector can be thought of as a <var>1×M</var>
+      matrix—i.w., a single row.  The matrix should be
+      an <var>M×N</var> matrix (<var>M</var> rows, <var>N</var> columns)
+      where <var>M</var> is <em>divisible by</em> the number of processes.
+    </p>
+    <p>
+      When you multiply these together, you will get an <var>1×N</var>
+      matrix—i.e., a row vector with as many columns as the matrix.
+      Each column in the answer is calculated as the dot product of the
+      corresponding column in the matrix with the vector.  As an example,
+      consider the following multiplication.  Note that in this
+      example, <var>M</var> is 3 and <var>N</var> is 4.
+    </p>
+    <div class="mult">
+      <table>
+        <tbody><tr>
+          <td>1</td>
+          <td>-1</td>
+          <td>2</td>
+        </tr>
+      </tbody></table>
+      <div>×</div>
+      <table>
+        <tbody><tr>
+          <td>1</td>
+          <td>2</td>
+          <td>3</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td>6</td>
+          <td>7</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td>10</td>
+          <td>11</td>
+          <td>12</td>
+        </tr>
+      </tbody></table>
+      <div>=</div>
+      <table class="sum">
+        <tbody><tr>
+          <td>1×1</td>
+          <td>2×1</td>
+          <td>3×1</td>
+          <td>4×1</td>
+        </tr>
+        <tr>
+          <td class="plus">+</td>
+          <td class="plus">+</td>
+          <td class="plus">+</td>
+          <td class="plus">+</td>
+        </tr>
+        <tr>
+          <td>5×-1</td>
+          <td>6×-1</td>
+          <td>7×-1</td>
+          <td>8×-1</td>
+        </tr>
+        <tr>
+          <td class="plus">+</td>
+          <td class="plus">+</td>
+          <td class="plus">+</td>
+          <td class="plus">+</td>
+        </tr>
+        <tr>
+          <td>9×2</td>
+          <td>10×2</td>
+          <td>11×2</td>
+          <td>12×2</td>
+        </tr>
+      </tbody></table>
+      <div>=</div>
+      <table>
+        <tbody><tr>
+          <td>14</td>
+          <td>16</td>
+          <td>18</td>
+          <td>20</td>
+        </tr>
+      </tbody></table>
+    </div>
+
+    <p>
+      Your program should begin by reading <var>M</var> and <var>N</var>, the
+      number of rows and columns.  (As mentioned above, we will assume
+      that <var>N</var> is divisible by the number of processes.
+    </p>
+    <p>
+      The next <var>M</var> numbers should be the vector.  After that should
+      be <var>M×N</var> numbers representing the matrix in row-major
+      order.  In the example above, our program would need to be run with one,
+      two, or four processes, and the input would be as follows:
+    </p>
+    <pre class="example">3 4 1 -1 2 1 2 3 4 5 6 7 8 9 10 11 12
+</pre>
+    <p>
+      Note that your program should not care about spacing in the input; it
+      should just read in numbers.  Thus, the input above could be better
+      formatted like so:
+    </p>
+    <pre class="example">3
+
+1 -1 2
+
+1  2  3  4
+5  6  7  8
+9 10 11 12
+</pre>
+    <p>
+      Your main process should read in the input,
+      broadcast <var>M</var>, <var>N</var>, and the vector, then scatter the
+      columns matrix.  (Broadcast both <var>M</var> and <var>N</var> in a
+      single packed broadcast.)  Each process should calculate the dot product
+      of each of its columns with the vector.  Then gather the results back
+      into a vector in the main process.  The main process should print the
+      resulting matrix out—all on one line separated by spaces (like a
+      column vector).  In the example above, the output would be
+    </p>
+    <pre class="example">14 16 18 20
+</pre>
+    <p>
+      I also want you to turn in three input/output test cases that
+      demonstrate the correctness of your student.  Please format your test
+      cases as the second one above so that they are easy to read.  qIn none
+      of your test cases should <var>M</var> = 1 or <var>N</var> = 1.  (That's
+      a good thing to test, but I want to see three more complicated test
+      cases.)  At least one of these should use 64 processes.  You may want to
+      use a script to generate these data files as they will be fairly large.
+    </p>
+    <p>
+      You may use <a href="https://cs.harding.edu/gfoust/classes/comp425/matrix.hpp">my matrix class</a> to store your matrices.
+    </p>
+  
+
+</body></html>
